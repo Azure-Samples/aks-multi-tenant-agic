@@ -4,8 +4,6 @@ languages:
 - azurecli
 - bash
 - javascript
-- aspx
-- aspx-csharp
 products:
 - azure
 - azure-resource-manager
@@ -22,7 +20,7 @@ products:
 - azure-virtual-machines
 - azure-application-gateway
 name: Use AKS and AGIC in a multi-tenant environment 
-description: This sample shows how to use the Application Gateway Ingress Controller in a multi-tenant AKS cluster to expose multiple instances of the same application, one for each tenant.
+description: This sample shows how to use the Application Gateway Ingress Controller in a multi-tenant AKS cluster.
 urlFragment: aks-multi-tenant-agic
 ---
 
@@ -281,13 +279,14 @@ echo "This is the [$imageName:$tag] container image in the [$acrName] Azure Cont
 az acr repository show --name $acrName \
                        --image $imageName:$tag 
 ```
+
 - The sample provides a [Helm](https://helm.sh/) chart in the `syntheticapi` folder. Run the `04-deploy-apps-via-helm.sh` script to deploy an instance of the application for each tenant specified in the `tenants` array. If you use For each tenant, the Helm chart will:
 
   - Create a namespace
   - Create a service account in the tenant namespace
   - Create a deployment for the application instance in the tenant namespace
   - Create a service for the application instance in the tenant namespace
-  - Create an ingress in the tenant namespace with <tenant-name>.<domain-name> as hostname
+  - Create an ingress in the tenant namespace with {tenant-name}.{domain-name} as hostname
   - Read the public IP address from the ingress
   - Check if an A record exists in the DNS zone on Azure. If yes, the script will delete it.
   - Create an A record with the name of the tenant and the Application Gateway public IP as address
@@ -450,7 +449,7 @@ done
   - Create a namespace
   - Create a deployment for the application instance in the tenant namespace
   - Create a service for the application instance in the tenant namespace
-  - Create an ingress in the tenant namespace with <tenant-name>.<domain-name> as hostname
+  - Create an ingress in the tenant namespace with {tenant-name}.{domain-name} as hostname
   - Read the public IP address from the ingress
   - Check if an A record exists in the DNS zone on Azure. If yes, the script will delete it.
   - Create an A record with the name of the tenant and the Application Gateway public IP as address
