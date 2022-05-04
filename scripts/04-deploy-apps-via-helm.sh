@@ -2,11 +2,11 @@
 
 # Variables
 tenants=("mars" "jupiter" "saturn")
-acrName="SallyAcr"
+acrName="<your-azure-container-registry>"
 chart="../syntheticapi"
 imageName="${acrName,,}.azurecr.io/syntheticapi"
 imageTag="latest"
-dnsZoneName="babosbird.com"
+dnsZoneName="<your-domain>" #e.g. contoso.com
 dnsZoneResourceGroupName="DnsResourceGroup"
 retries=150
 sleepInterval=2

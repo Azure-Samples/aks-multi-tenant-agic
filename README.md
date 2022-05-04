@@ -211,7 +211,7 @@ else
     # Create the cluster issuer 
     echo "[$clusterIssuer] cluster issuer does not exist"
     echo "Creating [$clusterIssuer] cluster issuer..."
-    cat $template | yq -Y "(.spec.acme.email)|="\""$email"\" | kubectl apply -n $namespace -f -
+    cat $template | yq "(.spec.acme.email)|="\""$email"\" | kubectl apply -n $namespace -f -
 fi
 ```
 
@@ -298,7 +298,7 @@ az acr repository show --name $acrName \
 
 # Variables
 tenants=("mars" "jupiter" "saturn")
-acrName="SallyAcr"
+acrName="<your-azure-container-registry>"
 chart="../syntheticapi"
 imageName="${acrName,,}.azurecr.io/syntheticapi"
 imageTag="latest"
@@ -459,7 +459,7 @@ done
 
 # Variables
 tenants=("mars" "jupiter" "saturn")
-acrName="SallyAcr"
+acrName="<your-azure-container-registry>"
 imageName="${acrName,,}.azurecr.io/syntheticapi:latest"
 deploymentName="syntheticapi"
 deploymentTemplate="deployment.yml"
@@ -496,7 +496,7 @@ for tenant in ${tenants[@]}; do
         echo "[$deploymentName] deployment does not exist in the [$tenant] namespace"
         echo "creating [$deploymentName] deployment in the [$tenant] namespace..."
         cat $deploymentTemplate |
-            yq -Y "(.spec.template.spec.containers[0].image)|="\""$imageName"\" |
+            yq "(.spec.template.spec.containers[0].image)|="\""$imageName"\" |
             kubectl apply -n $tenant -f -
     fi
 
@@ -522,10 +522,10 @@ for tenant in ${tenants[@]}; do
         host="$tenant.$dnsZoneName"
         echo "Creating [$ingressName] ingress in the [$tenant] namespace with [$host] host..."
         cat $ingressTemplate |
-            yq -Y "(.metadata.name)|="\""$ingressName"\" |
-            yq -Y "(.metadata.namespace)|="\""$tenant"\" |
-            yq -Y "(.spec.tls[0].hosts[0])|="\""$host"\" |
-            yq -Y "(.spec.rules[0].host)|="\""$host"\" |
+            yq "(.metadata.name)|="\""$ingressName"\" |
+            yq "(.metadata.namespace)|="\""$tenant"\" |
+            yq "(.spec.tls[0].hosts[0])|="\""$host"\" |
+            yq "(.spec.rules[0].host)|="\""$host"\" |
             kubectl apply -n $tenant -f -
     fi
 
