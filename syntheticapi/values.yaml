@@ -70,7 +70,7 @@ autoscaling:
   targetMemoryUtilizationPercentage: 80
 
 nodeSelector:
-  "beta.kubernetes.io/os": linux
+  "kubernetes.io/os": linux
 
 topologySpreadConstraints:
 - maxSkew: 1

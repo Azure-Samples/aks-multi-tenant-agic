@@ -133,7 +133,7 @@ In order to deploy and test the sample, please follow these steps:
   - Create the following CRDs: `Certificate`, `Challenge`, `ClusterIssuer`, `Issuer`, `Order`
   - Install `cert-manager` chart. For more information, see [How to install cert-manager on Kubernetes](https://docs.cert-manager.io/en/latest/getting-started/install/kubernetes.html#steps)
 
-```sh
+```bash
 #/bin/bash
 
 # Variables
@@ -179,7 +179,7 @@ fi
 - Run the `02-create-cluster-issuer.sh` bash script to create a `ClusterIssuer` resource. It is required by `cert-manager` to represent the `Let's Encrypt` certificate authority where the signed certificates will be obtained. By using the non-namespaced `ClusterIssuer` resource, `cert-manager` will issue certificates that can be consumed from multiple namespaces. Let’s Encrypt uses the ACME protocol to verify that you control a given domain name and to issue you a certificate. More details on configuring `ClusterIssuer` properties here. `ClusterIssuer` will instruct `cert-manager` to issue certificates using the Lets Encrypt staging environment used for testing (the root certificate not present in browser/client trust stores). The default challenge type in the YAML below is http01. Other challenges are documented on [letsencrypt.org - Challenge Types](https://letsencrypt.org/docs/challenge-types/).
   **NOTE**: update the value of the `email` variable with your email address before running the script.
 
-```sh
+```bash
 #/bin/bash
 
 # Variables
@@ -232,7 +232,7 @@ fi
 - Run the `03-push-docker-images.sh` bash script to push the container image from your local machine to Azure Container Registry (ACR).
   **NOTE**: update the value of the `acrName` variable with the name of your ACR before running the script.
 
-```sh
+```bash
 #!/bin/bash
 
 # Variables
@@ -273,7 +273,7 @@ az acr repository show --name $acrName \
 
   **NOTE**: Ensure that your Application Gateway has a public Frontend IP configuration with a public DNS name. Also, make sure to update all the placeholders before running the bash script. Feel free to change the name of the deployment, ingress, service, or the number and name of sample tenants.
 
-```sh
+```bash
 #!/bin/bash
 
 # Variables
@@ -434,7 +434,7 @@ done
   - Check if an A record exists in the DNS zone on Azure. If yes, the script will delete it.
   - Create an A record with the name of the tenant and the Application Gateway public IP as address
 
-```sh
+```bash
 #!/bin/bash
 
 # Variables
@@ -600,7 +600,7 @@ for tenant in ${tenants[@]}; do
 done
 ```
 
-**NOTE**: The ingress resource uses the `cert-manager` to get a TLS certificate from `Lets Encrypt` for the tenant hostname. Note the annotation [cert-manager.io/cluster-issuer: letsencrypt](https://cert-manager.io/docs/usage/ingress/#supported-annotations), which tells the `cert-manager` to process the tagged Ingress resource. Some if the elements in the YAML manifest get replaced by the bash script using the [yq](https://kislyuk.github.io/yq/) before the deployment. 
+**NOTE**: The ingress resource uses the `cert-manager` to get a TLS certificate from `Let's Encrypt` for the tenant hostname. Note the annotation [cert-manager.io/cluster-issuer: letsencrypt](https://cert-manager.io/docs/usage/ingress/#supported-annotations), which tells the `cert-manager` to process the tagged Ingress resource. Some if the elements in the YAML manifest get replaced by the bash script using the [yq](https://kislyuk.github.io/yq/) before the deployment. 
 **NOTE**: the [https://kubernetes.io/docs/concepts/services-networking/ingress/](https://kubernetes.io/docs/concepts/services-networking/ingress/) used to define the Application Gateway Ingress Controller as ingress controller has been deprecated and replaced by the new `ingressClassName`.
 
 ## Test the Deployment ##
