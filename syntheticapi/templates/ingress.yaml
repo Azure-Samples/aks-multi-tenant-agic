@@ -1,6 +1,7 @@
 {{- if .Values.ingress.enabled -}}
 {{- $fullName := include "syntheticapi.fullname" . -}}
 {{- $svcPort := .Values.service.port -}}
+{{- $ingressClassName := .Values.ingress.spec.ingressClassName -}}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -12,6 +13,7 @@ metadata:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
+  ingressClassName: {{ $ingressClassName }}
   {{- if .Values.ingress.tls }}
   tls:
   {{- range .Values.ingress.tls }}

@@ -142,21 +142,7 @@ repoName="jetstack"
 repoUrl="https://charts.jetstack.io"
 chartName="cert-manager"
 releaseName="cert-manager"
-version="v1.2.0"
-
-# check if namespace exists in the cluster
-result=$(kubectl get ns -o jsonpath="{.items[?(@.metadata.name=='$namespace')].metadata.name}")
-
-if [[ -n $result ]]; then
-    echo "$namespace namespace already exists in the cluster"
-else
-    echo "$namespace namespace does not exist in the cluster"
-    echo "creating $namespace namespace in the cluster..."
-    kubectl create namespace $namespace
-fi
-
-# Label the ingress-basic namespace to disable resource validation
-kubectl label namespace $namespace cert-manager.io/disable-validation=true
+version="v1.16.1"
 
 # Check if the ingress-nginx repository is not already added
 result=$(helm repo list | grep $repoName | awk '{print $1}')
@@ -182,14 +168,15 @@ else
     # Install the cert-manager Helm chart
     echo "Deploying [$releaseName] cert-manager to the $namespace namespace..."
     helm install $releaseName $repoName/$chartName \
+        --create-namespace \
         --namespace $namespace \
+        --set crds.enabled=true \
         --version $version \
-        --set installCRDs=true \
-        --set nodeSelector."beta\.kubernetes\.io/os"=linux
+        --set nodeSelector."kubernetes\.io/os"=linux
 fi
 ```
 
-- Run the the `02-create-cluster-issuer.sh` bash script to create a `ClusterIssuer` resource. It is required by `cert-manager` to represent the `Lets Encrypt` certificate authority where the signed certificates will be obtained. By using the non-namespaced `ClusterIssuer` resource, `cert-manager` will issue certificates that can be consumed from multiple namespaces. Let’s Encrypt uses the ACME protocol to verify that you control a given domain name and to issue you a certificate. More details on configuring `ClusterIssuer` properties here. `ClusterIssuer` will instruct `cert-manager` to issue certificates using the Lets Encrypt staging environment used for testing (the root certificate not present in browser/client trust stores). The default challenge type in the YAML below is http01. Other challenges are documented on [letsencrypt.org - Challenge Types](https://letsencrypt.org/docs/challenge-types/).
+- Run the `02-create-cluster-issuer.sh` bash script to create a `ClusterIssuer` resource. It is required by `cert-manager` to represent the `Let's Encrypt` certificate authority where the signed certificates will be obtained. By using the non-namespaced `ClusterIssuer` resource, `cert-manager` will issue certificates that can be consumed from multiple namespaces. Let’s Encrypt uses the ACME protocol to verify that you control a given domain name and to issue you a certificate. More details on configuring `ClusterIssuer` properties here. `ClusterIssuer` will instruct `cert-manager` to issue certificates using the Lets Encrypt staging environment used for testing (the root certificate not present in browser/client trust stores). The default challenge type in the YAML below is http01. Other challenges are documented on [letsencrypt.org - Challenge Types](https://letsencrypt.org/docs/challenge-types/).
   **NOTE**: update the value of the `email` variable with your email address before running the script.
 
 ```sh
@@ -199,42 +186,24 @@ fi
 email="<your-email-address>"
 namespace="default"
 clusterIssuer="letsencrypt-application-gateway"
-template="cluster-issuer.yml"
 
 # Check if the cluster issuer already exists
 result=$(kubectl get clusterissuer -n $namespace -o jsonpath="{.items[?(@.metadata.name=='$clusterIssuer')].metadata.name}")
 
-if [[ -n $result ]]; then
-    echo "[$clusterIssuer] cluster issuer already exists"
-    exit
-else
-    # Create the cluster issuer 
-    echo "[$clusterIssuer] cluster issuer does not exist"
-    echo "Creating [$clusterIssuer] cluster issuer..."
-    cat $template | yq "(.spec.acme.email)|="\""$email"\" | kubectl apply -n $namespace -f -
-fi
-```
-
-The script uses the `cluster-issuer.yml` YAML manifest:
-
-```yaml
-apiVersion: cert-manager.io/v1alpha2
+# Load template
+read -r -d '' template << EOF
+apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
 metadata:
   name: letsencrypt-application-gateway
 spec:
   acme:
-
-    # ACME server URL for Let’s Encrypt’s staging environment.
-    # The staging environment will not issue trusted certificates but is
-    # used to ensure that the verification process is working properly
-    # before moving to production
     server: https://acme-v02.api.letsencrypt.org/directory
 
     # You must replace this email address with your own.
     # Let's Encrypt will use this to contact you about expiring
     # certificates, and issues related to your account.
-    email: MY_EMAIL_ADDRESS
+    email: $email
 
     privateKeySecretRef:
       # Secret resource used to store the account's private key.
@@ -246,10 +215,21 @@ spec:
     solvers:
     - http01:
         ingress:
-          class: azure/application-gateway
+          ingressClassName: azure-application-gateway
+EOF
+
+if [[ -n $result ]]; then
+  echo "[$clusterIssuer] cluster issuer already exists"
+  exit
+else
+  # Create the cluster issuer 
+  echo "[$clusterIssuer] cluster issuer does not exist"
+  echo "Creating [$clusterIssuer] cluster issuer..."
+  echo "$template" | kubectl apply -n $namespace -f -
+fi
 ```
 
-- Run  the `03-push-docker-images.sh` bash script to push the container image from your local machine to Azure Container Registry (ACR).
+- Run the `03-push-docker-images.sh` bash script to push the container image from your local machine to Azure Container Registry (ACR).
   **NOTE**: update the value of the `acrName` variable with the name of your ACR before running the script.
 
 ```sh

@@ -6,7 +6,7 @@ repoName="jetstack"
 repoUrl="https://charts.jetstack.io"
 chartName="cert-manager"
 releaseName="cert-manager"
-version="v1.7.2"
+version="v1.16.1"
 
 # Check if the ingress-nginx repository is not already added
 result=$(helm repo list | grep $repoName | awk '{print $1}')
@@ -34,7 +34,7 @@ else
     helm install $releaseName $repoName/$chartName \
         --create-namespace \
         --namespace $namespace \
-        --set installCRDs=true \
-        --set version $version \
+        --set crds.enabled=true \
+        --version $version \
         --set nodeSelector."kubernetes\.io/os"=linux
 fi
